@@ -35,7 +35,7 @@ export const workspaceSearchDescription: INodeProperties[] = [
             show: showOnlyForWorkspaceSearch,
         },
         default: true,
-        description: 'Return the binary file associated with each result. Turn off for JSON only.'
+        description: 'Whether to return the binary file associated with each result'
     },
     {
         displayName: 'Limit',
@@ -76,6 +76,7 @@ export const workspaceSearchDescription: INodeProperties[] = [
 				displayName: 'File Share Expiry (Seconds)',
 				name: 'expiresInSeconds',
 				type: 'string',
+				default: '',
 				typeOptions: {
 					minValue: 60
 				},

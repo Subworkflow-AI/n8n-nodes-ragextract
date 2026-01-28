@@ -73,7 +73,7 @@ export const datasetsGetItemsDescription: INodeProperties[] = [
             show: showOnlyForDatasetsGetItems,
         },
         default: true,
-        description: 'Return the binary file associated with each result. Turn off for JSON only.'
+        description: 'Whether to return the binary file associated with each result'
     },
     {
         displayName: 'Options',
