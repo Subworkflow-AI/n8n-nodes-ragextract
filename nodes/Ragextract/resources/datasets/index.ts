@@ -2,6 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import { datasetsGetManyDescription } from './getAll';
 import { datasetsGetDescription } from './get';
 import { datasetsGetItemsDescription } from './getItems';
+import { datasetsDeleteDescription } from './delete';
 import { datasetsVectorizeDescription } from './vectorize';
 
 export const datasetsDescription: INodeProperties[] = [
@@ -16,6 +17,18 @@ export const datasetsDescription: INodeProperties[] = [
             },
         },
         options: [
+            {
+                name: 'Delete',
+                value: 'delete',
+                action: 'Bulk delete datasets in a workspace',
+                description: 'Bulk delete many datasets in a workspace',
+                routing: {
+                    request: {
+                        method: 'DELETE',
+                        url: '=/datasets',
+                    },
+                },
+            },
             {
                 name: 'Get',
                 value: 'get',
@@ -70,5 +83,6 @@ export const datasetsDescription: INodeProperties[] = [
     ...datasetsGetDescription,
     ...datasetsGetManyDescription,
     ...datasetsGetItemsDescription,
+    ...datasetsDeleteDescription,
     ...datasetsVectorizeDescription
 ];

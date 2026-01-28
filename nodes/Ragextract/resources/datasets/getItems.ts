@@ -23,8 +23,7 @@ export const datasetsGetItemsDescription: INodeProperties[] = [
         },
         options: [
             { name: 'Pdf', value: 'pdf' },
-            { name: 'jpg', value: 'jpg' },
-            { name: 'Embedding_image', value: 'embedding_image' }
+            { name: 'jpg', value: 'jpg' }
         ],
         default: 'pdf',
         description: 'Page format. eg. "pdf" or "jpg"',
@@ -65,6 +64,16 @@ export const datasetsGetItemsDescription: INodeProperties[] = [
         },
         default: false,
         description: 'Whether to return all results or only up to a given limit'
+    },
+    {
+        displayName: 'With Binary?',
+        name: 'shouldDownloadBinary',
+        type: 'boolean',
+        displayOptions: {
+            show: showOnlyForDatasetsGetItems,
+        },
+        default: true,
+        description: 'Return the binary file associated with each result. Turn off for JSON only.'
     },
     {
         displayName: 'Options',

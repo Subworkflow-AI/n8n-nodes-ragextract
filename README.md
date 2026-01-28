@@ -1,6 +1,6 @@
-# n8n-nodes-subworkflow-ai
+# n8n-nodes-ragextract
 
-An AI document processing n8n node for large documents, built for RAG and Structured Output Workflows.
+The official n8n node for Ragextract, a document processing and RAG service for large documents.
 
 ## Features
 * **Handles Documents up to 1gb** Protect the stability of your instance by offloading CPU intensive document processing work.
@@ -15,13 +15,13 @@ Install via the **Settings > Community Nodes** page in your n8n instance.
 
 ### Self-hosted CLI
 ```
-npm install n8n-nodes-subworkflow-ai
+npm install n8n-nodes-ragextract
 ```
 
 ## Credentials
 
-You will need a Subworkflow.AI account and workspace API key to use this node.
-* Sign up at https://subworkflow.ai
+You will need a Ragextract account and API key to use this node.
+* Sign up at https://ragextract.com
 * Go to **Workspaces > Settings > Keys > Create API Key**
 * Copy this API Key
 
@@ -31,6 +31,6 @@ MIT
 
 ## Resources
 
-* [Subworkflow.AI Getting Started Gude](https://docs.subworkflow.ai/getting-started)
-* [Official Subworkflow.AI API Reference](https://docs.subworkflow.ai/category/api-reference)
-* [Subworkflow JS SDK for programmatic usage](https://github.com/Subworkflow-AI/subworkflow-js-sdk)
+* [Ragextract Getting Started Gude](https://docs.ragextract.com/getting-started)
+* [Official Ragextract API Reference](https://docs.ragextract.com/category/api-reference)
+* [Ragextract JS SDK for programmatic usage](https://github.com/subworkflow-ai/ragextract-js)

@@ -1,4 +1,5 @@
 import {
+    IBinaryKeyData,
     IExecuteFunctions,
     IHttpRequestMethods,
     ILoadOptionsFunctions,
@@ -14,20 +15,20 @@ import { workspaceDescription } from './resources/workspace';
 import { datasetsDescription } from './resources/datasets';
 import { jobsDescription } from './resources/jobs';
 
-const SUBWORKFLOWAI_API_BASE_URL = 'https://api.subworkflow.ai/v1';
-const CREDENTIAL_NAME = 'subworkflowAiApi';
+const RAGEXTRACT_API_BASE_URL = 'https://api.ragextract.com/v1';
+const CREDENTIAL_NAME = 'ragextractApi';
 
-export class SubworkflowAi implements INodeType {
+export class Ragextract implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'SubworkflowAI',
-        name: 'subworkflowAi',
+        displayName: 'Ragextract',
+        name: 'ragextract',
         icon: { light: 'file:../../icons/subworkflow-ai.svg', dark: 'file:../../icons/subworkflow-ai.dark.svg' },
         group: ['transform'],
         version: 1,
         subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-        description: 'Document Processing with SubworkflowAI API',
+        description: 'Document Processing with Ragextract API',
         defaults: {
-            name: 'SubworkflowAI',
+            name: 'ragextract',
         },
         usableAsTool: true,
         inputs: [NodeConnectionTypes.Main],
@@ -76,7 +77,7 @@ export class SubworkflowAi implements INodeType {
                     this,
                     CREDENTIAL_NAME,
                     {
-                        url: `${SUBWORKFLOWAI_API_BASE_URL}/datasets`,
+                        url: `${RAGEXTRACT_API_BASE_URL}/datasets`,
                         qs: { offset: 0, limit: 6, sort: '-created', expiresInSeconds: 0 },
                     }
                 );
@@ -84,7 +85,7 @@ export class SubworkflowAi implements INodeType {
                 const results: INodeListSearchItems[] = responseData.data.map((item) => ({
                     name: `${item.fileName}.${item.fileExt}`,
                     value: item.id,
-                    url: `https://api.subworkflow.ai/v1/datasets/${item.id}`
+                    url: `https://api.ragextract.com/v1/datasets/${item.id}`
                 }));
             
                 return { results }
@@ -106,7 +107,7 @@ export class SubworkflowAi implements INodeType {
                     this,
                     CREDENTIAL_NAME,
                     {
-                        url: `${SUBWORKFLOWAI_API_BASE_URL}/jobs`,
+                        url: `${RAGEXTRACT_API_BASE_URL}/jobs`,
                         method: 'GET',
                         qs: { offset: 0, limit: 10 },
                     }
@@ -115,7 +116,7 @@ export class SubworkflowAi implements INodeType {
                 const results: INodeListSearchItems[] = responseData.data.map((item) => ({
                     name: `${item.id} - ${item.type} (${item.status})`,
                     value: item.id,
-                    url: `https://api.subworkflow.ai/v1/jobs/${item.id}`
+                    url: `https://api.ragextract.com/v1/jobs/${item.id}`
                 }));
 
                 return { results };
@@ -171,7 +172,7 @@ export class SubworkflowAi implements INodeType {
                     while(Date.now() < end) {
                         await sleep(1000);
                         const jobResponse = await this.helpers.httpRequestWithAuthentication.call(this, CREDENTIAL_NAME, {
-                            url: `${SUBWORKFLOWAI_API_BASE_URL}/jobs/${job.id}`,
+                            url: `${RAGEXTRACT_API_BASE_URL}/jobs/${job.id}`,
                             method: 'GET',
                             json: true
                         });
@@ -184,18 +185,50 @@ export class SubworkflowAi implements INodeType {
                         }
                     }
                     const datasetResponse = await this.helpers.httpRequestWithAuthentication.call(this, CREDENTIAL_NAME, {
-                        url: `${SUBWORKFLOWAI_API_BASE_URL}/datasets/${job.datasetId}`,
+                        url: `${RAGEXTRACT_API_BASE_URL}/datasets/${job.datasetId}`,
                         method: 'GET',
                         json: true
                     });
                     data = [datasetResponse.data];
                 }
             }
+            if (request.shouldDownloadBinary) {
+                const dataWithBinary = await Promise.all(data.map(async item => {
+                    let binaryData: IBinaryKeyData['data'] = {
+                        data: 'no_data',
+                        mimeType: 'text/plain'
+                    };
+                    if (item.share.url) {
+                        const itemBinaryData = await this.helpers.httpRequest.call(this, {
+                            url: item.share.url,
+                            method: 'GET',
+                            encoding: "arraybuffer",
+                        });
+                        binaryData = await this.helpers.prepareBinaryData(
+                            itemBinaryData,
+                            `${item.id}.${item.row ?? 'pdf'}`,
+                            item.row
+                                ? item.row === 'pdf' ? 'application/pdf' : 'image/jpeg'
+                                : 'application/pdf',
+                        );
+                    }
+                    return {
+                        binary: { data: binaryData },
+                        json: { data: item },
+                        pairedItem: { item: itemIndex },
+                    }
+                }));
 
-            returnData.push({
-                json: { data: data.length > 1 ? data : data[0] },
-                pairedItem: { item: itemIndex },
-            });
+                returnData.push(...dataWithBinary)
+
+            } else {
+                data.forEach(item => {
+                    returnData.push({
+                        json: { data: item },
+                        pairedItem: { item: itemIndex },
+                    });
+                })
+            }
         }
 
         return [returnData];
@@ -289,7 +322,7 @@ const requestHandler = async (
             const body = createForm(formFields);
 
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/${operation}`,
+                url: `${RAGEXTRACT_API_BASE_URL}/${operation}`,
                 method: 'POST',
                 body: body,
                 json: false,
@@ -297,22 +330,34 @@ const requestHandler = async (
                 pollTimeout: options.pollTimeout ?? defaultPollTimeout,
             }
         } else if (operation === 'search') {
-            const query = {
-                text: node.getNodeParameter('queryText',itemIndex) as string,
-                image_url: node.getNodeParameter('queryImage',itemIndex) as string || undefined
-            };
+            let query;
+            const queryText = node.getNodeParameter('queryText',itemIndex) as string;
+            const queryImageUrl = node.getNodeParameter('queryImage',itemIndex) as string || undefined;
+            const shouldDownloadBinary = node.getNodeParameter('shouldDownloadBinary',itemIndex) as boolean;
+
+            if (queryImageUrl && queryText) {
+                query = { text: queryText, image_url: queryImageUrl }
+            } else if (queryImageUrl) {
+                query = { image_url: queryImageUrl }
+            } else {
+                query = queryText;
+            }
+
             const limit = node.getNodeParameter('limit',itemIndex, 5) as number;
 
             const datasetIds = options.datasetIds
                 ?  options.datasetIds.split(',').filter(id => id.startsWith('ds_'))
-                : [];
+                : undefined;
+
+            const expiresInSeconds = options.expiresInSeconds ?? 60 * 10;
 
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/search`,
+                url: `${RAGEXTRACT_API_BASE_URL}/search`,
                 method: 'POST',
-                body: { query, limit, datasetIds },
+                body: { query, limit, datasetIds, expiresInSeconds },
                 qs: undefined,
-                json: true
+                json: true,
+                shouldDownloadBinary,
             }
         }
 
@@ -325,15 +370,24 @@ const requestHandler = async (
                 offset: options.offset ? Number(options.offset) : 0,
                 limit,
                 sort: options.sort ?? undefined,
-                expiresInSeconds: options.expiresInSeconds ?? 1000 * 60 * 10
+                expiresInSeconds: options.expiresInSeconds ?? 60 * 10
             };
 
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/datasets`,
+                url: `${RAGEXTRACT_API_BASE_URL}/datasets`,
                 method: 'GET',
                 qs: qs,
                 json: true,
                 returnAll,
+            }
+        } else if (operation === 'delete') {
+            const datasetIds = node.getNodeParameter('datasetIds', itemIndex) as string;
+
+            return {
+                url: `${RAGEXTRACT_API_BASE_URL}/datasets`,
+                method: 'DELETE',
+                body: { datasetIds: !Array.isArray(datasetIds) ? datasetIds.split(',') : datasetIds },
+                json: true,
             }
         } else if (operation === 'getItems') {
             const dataset = node.getNodeParameter('dataset',itemIndex) as { name: string; value: string };
@@ -341,6 +395,7 @@ const requestHandler = async (
             const cols = node.getNodeParameter('cols',itemIndex) as string;
             const limit = node.getNodeParameter('limit', itemIndex, 100);
             const returnAll = node.getNodeParameter('returnAll', itemIndex, false);
+            const shouldDownloadBinary = node.getNodeParameter('shouldDownloadBinary',itemIndex) as boolean;
 
             const qs = {
                 row,
@@ -348,24 +403,25 @@ const requestHandler = async (
                 offset: options.offset ? Number(options.offset) : 0,
                 limit,
                 sort: options.sort ?? undefined,
-                expiresInSeconds: options.expiresInSeconds ?? 1000 * 60 * 10
+                expiresInSeconds: options.expiresInSeconds ?? 60 * 10
             };
 
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/datasets/${dataset.value}/items`,
+                url: `${RAGEXTRACT_API_BASE_URL}/datasets/${dataset.value}/items`,
                 method: 'GET',
                 qs: qs,
                 json: true,
-                returnAll
+                returnAll,
+                shouldDownloadBinary
             }
         } else if (operation === 'get') {
             const dataset = node.getNodeParameter('dataset',itemIndex) as { name: string; value: string };
             const qs = {
-                expiresInSeconds: options.expiresInSeconds ?? 1000 * 60 * 10
+                expiresInSeconds: options.expiresInSeconds ?? 60 * 10
             };
 
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/datasets/${dataset.value}`,
+                url: `${RAGEXTRACT_API_BASE_URL}/datasets/${dataset.value}`,
                 method: 'GET',
                 qs: qs,
                 json: true
@@ -374,7 +430,7 @@ const requestHandler = async (
             const dataset = node.getNodeParameter('dataset',itemIndex) as { name: string; value: string };
 
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/datasets/${dataset.value}/vectorize`,
+                url: `${RAGEXTRACT_API_BASE_URL}/datasets/${dataset.value}/vectorize`,
                 method: 'POST',
                 json: true,
                 waitForCompletion: options.waitForCompletion ?? defaultWaitForCompletion,
@@ -394,7 +450,7 @@ const requestHandler = async (
                 limit,
             };
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/jobs`,
+                url: `${RAGEXTRACT_API_BASE_URL}/jobs`,
                 method: 'GET',
                 qs: qs,
                 json: true,
@@ -403,7 +459,7 @@ const requestHandler = async (
         } else if (operation === 'get') {
             const job = node.getNodeParameter('job',itemIndex) as { name: string; value: string };
             return {
-                url: `${SUBWORKFLOWAI_API_BASE_URL}/jobs/${job.value}`,
+                url: `${RAGEXTRACT_API_BASE_URL}/jobs/${job.value}`,
                 method: 'GET',
                 json: true
             }

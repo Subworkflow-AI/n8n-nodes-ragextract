@@ -28,6 +28,16 @@ export const workspaceSearchDescription: INodeProperties[] = [
         description: 'Optional image URL to use as part of the search'
     },
     {
+        displayName: 'With Binary?',
+        name: 'shouldDownloadBinary',
+        type: 'boolean',
+        displayOptions: {
+            show: showOnlyForWorkspaceSearch,
+        },
+        default: true,
+        description: 'Return the binary file associated with each result. Turn off for JSON only.'
+    },
+    {
         displayName: 'Limit',
         name: 'limit',
         type: 'number',
@@ -61,7 +71,17 @@ export const workspaceSearchDescription: INodeProperties[] = [
                 default: '',
                 placeholder: 'eg. ds_123456,ds_789012',
                 description: 'Filter by Dataset IDs. Comma-delimited.',
-            }
+            },
+            {
+				displayName: 'File Share Expiry (Seconds)',
+				name: 'expiresInSeconds',
+				type: 'string',
+				typeOptions: {
+					minValue: 60
+				},
+				default: 60 * 10,
+				description: 'The expiry duration in seconds for the dataset file share link',
+			}
         ]
     }
 ];

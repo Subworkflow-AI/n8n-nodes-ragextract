@@ -6,14 +6,14 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class SubworkflowAiApi implements ICredentialType {
-	name = 'subworkflowAiApi';
+export class RagextractApi implements ICredentialType {
+	name = 'ragextractApi';
 
-	displayName = 'SubworkflowAI API';
+	displayName = 'Ragextract API';
 
 	icon: Icon = { light: 'file:../icons/subworkflow-ai.svg', dark: 'file:../icons/subworkflow-ai.dark.svg' };
 
-	documentationUrl = 'https://docs.subworkflow.ai/auth';
+	documentationUrl = 'https://docs.ragextract.com/auth';
 
 	properties: INodeProperties[] = [
 		{
@@ -36,7 +36,7 @@ export class SubworkflowAiApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://api.subworkflow.ai/v1',
+			baseURL: 'https://api.ragextract.com/v1',
 			url: '/verify',
 			method: 'GET',
 		},

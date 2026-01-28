@@ -34,7 +34,17 @@ export const datasetsVectorizeDescription: INodeProperties[] = [
                 type: 'number',
                 default: 600,
                 description: 'Maximum wait time if waiting for completion',
-            }
+            },
+            {
+				displayName: 'File Share Expiry (Seconds)',
+				name: 'expiresInSeconds',
+				type: 'string',
+				typeOptions: {
+					minValue: 60
+				},
+				default: '',
+				description: 'The expiry duration in seconds for the dataset file share link',
+			},
         ]
     }
 ];

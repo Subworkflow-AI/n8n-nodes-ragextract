@@ -24,7 +24,7 @@ export const datasetSelect: INodeProperties = {
 			name: 'name',
 			type: 'string',
 			placeholder: 'e.g. ds_123456789',
-			url: '=https://api.subworkflow.ai/v1/datasets/{{$value}}'
+			url: '=https://api.ragextract.com/v1/datasets/{{$value}}'
 		}
 	]
 }
@@ -53,7 +53,7 @@ export const jobsSelect: INodeProperties = {
 			name: 'name',
 			type: 'string',
 			placeholder: 'e.g. dsj_123456789',
-			url: '=https://api.subworkflow.ai/v1/jobs/{{$value}}'
+			url: '=https://api.ragextract.com/v1/jobs/{{$value}}'
 		}
 	]
 }
