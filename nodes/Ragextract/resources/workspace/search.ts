@@ -75,8 +75,7 @@ export const workspaceSearchDescription: INodeProperties[] = [
             {
 				displayName: 'File Share Expiry (Seconds)',
 				name: 'expiresInSeconds',
-				type: 'string',
-				default: '',
+				type: 'number',
 				typeOptions: {
 					minValue: 60
 				},
