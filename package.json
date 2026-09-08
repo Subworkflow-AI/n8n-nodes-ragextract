@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-ragextract",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "description": "Official n8n node for Ragextract.com",
     "license": "MIT",
     "homepage": "https://ragextract.com",
@@ -39,10 +39,10 @@
         "n8nNodesApiVersion": 1,
         "strict": true,
         "credentials": [
-            "dist/credentials/Ragextract.credentials.js"
+            "dist/credentials/RagextractApi.credentials.js"
         ],
         "nodes": [
-            "dist/nodes/SubworkflowAI/Ragextract.node.js"
+            "dist/nodes/Ragextract/Ragextract.node.js"
         ]
     },
     "devDependencies": {

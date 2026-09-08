@@ -2,14 +2,20 @@
 	"node": "n8n-nodes-ragextract",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Development", "Developer Tools"],
+	"categories": [
+		"Development",
+		"Developer Tools"
+	],
 	"resources": {
 		"credentialDocumentation": [
 			{
-				"url": "https://docs.ragextract.com/auth"
+				"url": "https://ragextract.com/developers/api/authentication"
 			}
 		],
 		"primaryDocumentation": [
+			{
+				"url": "https://ragextract.com/developers/api"
+			},
 			{
 				"url": "https://github.com/subworkflow-ai/n8n-nodes-ragextract"
 			}
