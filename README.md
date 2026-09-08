@@ -202,6 +202,30 @@ workspace CRUD, multipart upload, and a configurable base URL.
 
 The v1 API is unchanged and still served; only this node moved.
 
+## Development
+
+```bash
+npm install
+npm run dev      # run against a local n8n instance
+npm run lint     # n8n community-node lint rules
+npm run build    # compile to dist/ and copy icons
+npm run verify   # check the build produced what package.json points n8n at
+```
+
+### Releasing
+
+Published with npm directly — there is no release tool to drive.
+
+```bash
+npm version <patch|minor|major>   # bumps package.json, commits, tags
+git push && git push --tags
+npm publish                       # lint, build and verify run first
+```
+
+`prepublishOnly` runs `lint && build && verify`, so a publish always ships a freshly compiled
+`dist/` and fails rather than uploading one that is missing the node, the credential or their icons.
+Update `CHANGELOG.md` by hand before bumping.
+
 ## Support
 
 * [Issue tracker](https://github.com/subworkflow-ai/n8n-nodes-ragextract/issues) — bugs and feature

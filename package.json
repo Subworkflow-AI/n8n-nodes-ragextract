@@ -20,7 +20,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/subworkflow-ai/n8n-nodes-ragextract.git"
+        "url": "git+https://github.com/subworkflow-ai/n8n-nodes-ragextract.git"
     },
     "main": "index.js",
     "scripts": {
@@ -29,8 +29,8 @@
         "dev": "n8n-node dev",
         "lint": "n8n-node lint",
         "lint:fix": "n8n-node lint --fix",
-        "release": "n8n-node release",
-        "prepublishOnly": "n8n-node prerelease"
+        "prepublishOnly": "npm run lint && npm run build && npm run verify",
+        "verify": "node scripts/verify-build.mjs"
     },
     "files": [
         "dist"
@@ -51,10 +51,12 @@
         "@typescript-eslint/parser": "^8.48.0",
         "eslint": "9.32.0",
         "prettier": "3.6.2",
-        "release-it": "^19.0.4",
         "typescript": "5.9.2"
     },
     "peerDependencies": {
         "n8n-workflow": "*"
+    },
+    "bugs": {
+        "url": "https://github.com/subworkflow-ai/n8n-nodes-ragextract/issues"
     }
 }
